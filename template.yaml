@@ -21,7 +21,7 @@ Resources:
       CodeUri: src/
       Handler: lambda_function.lambda_handler
       Runtime: python3.10
-      MemorySize: 2048
+      MemorySize: 1024
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref TargetBucketName
