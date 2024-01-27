@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Compress json files into zip files
+
+Parameters:
+  TargetBucketName:
+    Type: String
+    Default: video-processing-outputs
+
+Resources:
+  ## S3 bucket
+  TargetBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref TargetBucketName
+  
+  ## Lambda function
+  LambdaFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: src/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      MemorySize: 2048
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref TargetBucketName
+        - S3CrudPolicy:
+            BucketName: !Ref TargetBucketName              
+      Events:
+        FileUpload:
+          Type: S3
+          Properties:
+            Bucket: !Ref TargetBucket
+            Events: s3:ObjectCreated:*
+            Filter: 
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: '.json'     
+Outputs:
+  TargetBucketName:
+    Value: !Ref TargetBucketName
+    Description: S3 Bucket for object storage
+  FunctionArn:
+    Value: !Ref LambdaFunction
+    Description: lambda function Arn
